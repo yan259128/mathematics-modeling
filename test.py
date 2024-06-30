@@ -1,7 +1,7 @@
 from scipy.optimize import linprog
 import numpy as np
-from mat2d_round import mat2d_round
-from bicycle_iter import bicycle_iter
+from mat2d_round import *
+from bicycle_iter import *
 
 MaxBicycleNum = 1000  # 最大自行车投放数量
 
@@ -37,7 +37,7 @@ NormalizedDemandsOut = DemandsHourly / DemandsHourly.sum(1, keepdims=True)
 # InitBicycleNums = InitBicycleNums.round(0).astype(int)
 
 # InitBicycleNums = np.zeros(10, dtype=int)
-# InitBicycleNums[7] = 5000
+# InitBicycleNums[7] = 1000
 # InitBicycleNums[8] = 5000
 # InitBicycleNums[9] = 5000
 
@@ -46,6 +46,8 @@ InitBicycleNums = np.array([95, 103,  91, 110,  94,  98, 118,  98, 107, 100])
 print("Init Bicycle:\t", InitBicycleNums.sum(), InitBicycleNums)
 # print("BicycleOut:\t", BicycleOut)
 # print("BicycleIn:\t", BicycleIn)
-for epoch in range(0, 18 * 10):
-    print(f"Epoch {epoch} start")
-    InitBicycleNums, _ = bicycle_iter(InitBicycleNums, (DemandsHourly/6).round(0).astype(int))
+# for epoch in range(0, 18 * 10):
+#     print(f"Epoch {epoch} start")
+#     InitBicycleNums, _ = bicycle_epoch(InitBicycleNums, (DemandsHourly/6).round(0).astype(int))
+revenue = total_revenue(InitBicycleNums, (DEMANDS_HOURLY/6).round(0).astype(int))
+print(f"{BICYCLE_LIFE}年生命周期总利润: {revenue:.2f}元")
