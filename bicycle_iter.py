@@ -68,7 +68,8 @@ def total_revenue(
     demands: np.ndarray = DEMANDS_HOURLY,
     demands_interval=TRANSFER_TIME, 
     iter_interval=DISPATCH_INTERVAL,
-    total_period_in_year = BICYCLE_LIFE
+    total_period_in_year = BICYCLE_LIFE,
+    mute = False
 )-> float:
     total_bicycle = int(bicycles.sum())
 
@@ -83,8 +84,7 @@ def total_revenue(
     iter_transfer = 0
     for i in range(epoches):
         bicycles, _, outs, _ = bicycle_epoch(bicycles, demands)
-        print(f"epoch {i+1}")
-        print("out_bicycles:\t", outs.sum(), outs)
+        if not mute: print(f"epoch {i+1} out: {outs.sum().item()} {outs}")
         iter_transfer += outs.sum()
     iter_income = iter_transfer * TRANSFER_REVENUE
     iter_income *= 1 - BICYCLE_MAINT_RATIO_DAILY

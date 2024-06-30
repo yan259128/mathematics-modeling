@@ -1,72 +1,105 @@
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
-from scipy.optimize import minimize
+from stable_baselines3 import PPO
 
-# 输入数据
-demand_matrix = np.array([
-    [0, 86, 120, 75, 122, 92, 129, 60, 105, 97],
-    [86, 0, 58, 124, 103, 149, 117, 60, 74, 119],
-    [109, 74, 0, 102, 88, 76, 140, 97, 70, 111],
-    [120, 81, 79, 0, 72, 58, 128, 75, 115, 129],
-    [70, 140, 109, 138, 0, 88, 114, 51, 140, 71],
-    [52, 100, 70, 116, 50, 0, 148, 70, 82, 66],
-    [88, 80, 91, 100, 64, 69, 0, 59, 114, 51],
-    [119, 149, 90, 139, 93, 132, 135, 0, 110, 143],
-    [106, 95, 107, 97, 150, 128, 91, 141, 0, 117],
-    [106, 138, 86, 116, 116, 112, 95, 146, 136, 0]
-])
 
-# 参数
-cost_per_bike = 4000
-fixed_cost_per_year = 500000
-revenue_per_order = 3
-maintenance_cost_rate = 0.165  # 取15%-18%的中间值
-bike_lifetime = 5
-recovery_rate = 0.1
-sunny_hours_per_day = 12
-rainy_hours_per_day = 0
+class BikeSharingEnv(gym.Env):
+    def __init__(self, initial_bikes=1000, maintenance_cost=0.165, order_income=3, bike_cost=4000, fixed_cost=500000,
+                 bike_life=5, scrap_rate=0.1, sunny_hours=12, rainy_hours=0, sunny_days=10.19, rainy_days=5.2):
+        super(BikeSharingEnv, self).__init__()
 
-# 计算晴天和雨天数量
-sunny_days_ratio = 5.2
-rainy_days_ratio = 10.19
-total_days = 365 * 5
-sunny_days = (sunny_days_ratio / (sunny_days_ratio + rainy_days_ratio)) * total_days
-rainy_days = (rainy_days_ratio / (sunny_days_ratio + rainy_days_ratio)) * total_days
+        # Constants
+        self.initial_bikes = initial_bikes
+        self.maintenance_cost = maintenance_cost
+        self.order_income = order_income
+        self.bike_cost = bike_cost
+        self.fixed_cost = fixed_cost
+        self.bike_life = bike_life
+        self.scrap_rate = scrap_rate
+        self.sunny_hours = sunny_hours
+        self.rainy_hours = rainy_hours
+        self.sunny_days = sunny_days
+        self.rainy_days = rainy_days
 
-# 计算各区域年收入
-hourly_demand = np.sum(demand_matrix, axis=1)
-annual_revenue_per_bike = hourly_demand * revenue_per_order * sunny_hours_per_day * sunny_days
+        # Action space: number of bikes to allocate to each region (discrete for simplicity)
+        self.action_space = spaces.Box(low=0, high=initial_bikes, shape=(10,), dtype=np.int32)
 
-# 目标函数
-def objective_function(x):
-    bikes_distribution = x
-    total_bikes = np.sum(bikes_distribution)
-    total_revenue = np.sum(annual_revenue_per_bike * bikes_distribution)
-    total_cost = total_bikes * cost_per_bike + fixed_cost_per_year * bike_lifetime + total_revenue * maintenance_cost_rate
-    profit = total_revenue - total_cost
-    return -profit  # 最大化利润等价于最小化负利润
+        # Observation space: demand in each region
+        self.observation_space = spaces.Box(low=0, high=np.inf, shape=(10,), dtype=np.float32)
 
-# 初始猜测
-x0 = np.ones(10) * 100000
+        # Load the demand data from the document
+        self.demand_matrix = np.array([
+            [0, 86, 120, 75, 122, 92, 129, 60, 105, 97],
+            [86, 0, 58, 124, 103, 149, 117, 60, 74, 119],
+            [109, 74, 0, 102, 88, 76, 140, 97, 70, 111],
+            [120, 81, 79, 0, 72, 58, 128, 75, 115, 129],
+            [70, 140, 109, 138, 0, 88, 114, 51, 140, 71],
+            [52, 100, 70, 116, 50, 0, 148, 70, 82, 66],
+            [88, 80, 91, 100, 64, 69, 0, 59, 114, 51],
+            [119, 149, 90, 139, 93, 132, 135, 0, 110, 143],
+            [106, 95, 107, 97, 150, 128, 91, 141, 0, 117],
+            [106, 138, 86, 116, 116, 112, 95, 146, 136, 0]
+        ])
 
-# 边界条件
-bounds = [(0, None) for _ in range(10)]
+        self.reset()
 
-# 约束条件
-constraints = [{'type': 'ineq', 'fun': lambda x: x}]  # 保证投放单车数不为负
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self.bike_allocation = np.full(10, self.initial_bikes // 10)
+        observation = self._get_observation()
+        info = {}  # No specific information to return
+        return observation, info
 
-# 求解问题2
-result2 = minimize(objective_function, x0, bounds=bounds, constraints=constraints, method='SLSQP')
+    def step(self, action):
+        # Ensure action is within the valid range and is an integer
+        action = np.clip(action, 0, self.initial_bikes).astype(int)
+        self.bike_allocation = action
 
-# 输出结果
-if result2.success:
-    optimal_distribution2 = result2.x
-    total_bikes = np.sum(optimal_distribution2)
-    total_revenue2 = np.sum(annual_revenue_per_bike * optimal_distribution2)
-    total_cost2 = total_bikes * cost_per_bike + fixed_cost_per_year * bike_lifetime + total_revenue2 * maintenance_cost_rate
-    max_profit = total_revenue2 - total_cost2
-    print("问题2 最优单车总数：", total_bikes)
-    print("问题2 最优投放方案：", optimal_distribution2)
-    print("问题2 最大利润：", max_profit)
-else:
-    print("问题2 求解失败")
-    print("状态信息：", result2.message)
+        # Calculate rewards
+        revenue = 0
+        cost = 0
+        for i in range(10):
+            for j in range(10):
+                trips = min(self.bike_allocation[i], self.demand_matrix[i, j])
+                revenue += trips * self.order_income
+                cost += trips * self.maintenance_cost * self.order_income
+
+        total_cost = cost + self.fixed_cost + self.initial_bikes * self.bike_cost / self.bike_life * (
+                    1 - self.scrap_rate)
+        profit = revenue - total_cost
+
+        # Determine if the episode is done
+        done = False  # No specific termination condition for now
+
+        reward = profit  # Reward is the profit
+
+        return self._get_observation(), reward, done, {}
+
+    def _get_observation(self):
+        return self.bike_allocation.astype(np.float32)
+
+    def render(self, mode='human'):
+        print(f"Bike allocation: {self.bike_allocation}")
+
+
+# Instantiate the environment
+env = BikeSharingEnv()
+
+# Create the model
+model = PPO("MlpPolicy", env, verbose=1)
+
+# Train the model
+model.learn(total_timesteps=1000)
+
+# Save the model
+model.save("ppo_bike_sharing")
+
+# Test the trained model
+obs, _ = env.reset()  # Unpack observation and info
+for i in range(100):
+    action, _states = model.predict(obs, deterministic=True)
+    obs, reward, done, info = env.step(action)
+    env.render()
+    if done:
+        break

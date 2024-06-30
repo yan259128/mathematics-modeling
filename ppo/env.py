@@ -1,7 +1,12 @@
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
+from stable_baselines3 import PPO
+from bicycle_iter import *
+from mat2d_round import *
 
+
+total_days = 365 * 5
 
 class BikeSharingEnv(gym.Env):
     def __init__(self, initial_bikes=1000, maintenance_cost=0.165, order_income=3, bike_cost=4000, fixed_cost=500000,
@@ -20,6 +25,7 @@ class BikeSharingEnv(gym.Env):
         self.rainy_hours = rainy_hours
         self.sunny_days = sunny_days
         self.rainy_days = rainy_days
+        self.epoch = 0
 
         # Action space: number of bikes to allocate to each region
         self.action_space = spaces.Box(low=0, high=initial_bikes, shape=(10,), dtype=np.int32)
@@ -43,42 +49,77 @@ class BikeSharingEnv(gym.Env):
 
         self.reset()
 
-    def reset(self):
-        self.bike_allocation = np.full(10, self.initial_bikes // 10)
-        return self._get_observation()
+    def reset(self, seed=None, options=None):
+        super().reset(seed=seed)
+        self.bike_allocation = np.zeros((10,)) #np.full(10, self.initial_bikes // 10)
+        self.total_profit = 0
+        observation = self._get_observation()
+        info = {}  # No specific information to return
+        return observation, info
 
     def step(self, action):
-        # Update bike allocation based on action
+        self.epoch += 1
+        # Ensure action is within the valid range and is an integer
+        action = np.clip(action, 0, None)*1000
+        action = mat2d_round(action.reshape((-1, 1)), 0).flatten()
+        old_action = action.copy()
+        action += np.array([126, 134, 118, 143, 124, 127, 120, 113, 173, 133])
+        # action += np.ones_like(action, dtype=int)
         self.bike_allocation = action
+        # print(action)
 
         # Calculate rewards
-        revenue = 0
-        cost = 0
-        for i in range(10):
-            for j in range(10):
-                trips = min(self.bike_allocation[i], self.demand_matrix[i, j])
-                revenue += trips * self.order_income
-                cost += trips * self.maintenance_cost * self.order_income
+        # revenue = 0
+        # cost = 0
+        # for i in range(10):
+        #     for j in range(10):
+        #         trips = min(self.bike_allocation[i], self.demand_matrix[i, j])
+        #         sunny_days_time = (self.sunny_days / (self.sunny_days + self.rainy_days)) * total_days
+        #         revenue += trips * self.order_income * sunny_days_time * self.sunny_hours
+        #         cost += trips * self.maintenance_cost * self.order_income
 
-        total_cost = cost + self.fixed_cost + self.initial_bikes * self.bike_cost / self.bike_life * (
-                    1 - self.scrap_rate)
-        profit = revenue - total_cost
+        # fixed_annual_cost = self.fixed_cost + self.initial_bikes * self.bike_cost / self.bike_life * (
+                    # 1 - self.scrap_rate)
+        # total_cost = cost + fixed_annual_cost
+        # print("total_cost", total_cost)
+        # print("revenue", revenue)
+
+        demand_matrix = (self.demand_matrix / 6).round(0).astype(int)
+        profit = total_revenue(action, demand_matrix, mute = True)
+        self.total_profit = profit
 
         # Determine if the episode is done
-        done = False  # For simplicity, we can define the termination condition as you see fit
+        done = False  # No specific termination condition for now
+        truncated = False  # No specific truncation condition for now
 
         reward = profit  # Reward is the profit
-
-        return self._get_observation(), reward, done, {}
+        print(f"epoch{self.epoch:4d} profit: {profit:.0f}\tdelta: {old_action}, init: {action}")
+        return self._get_observation(), reward, done, truncated, {}
 
     def _get_observation(self):
-        return self.bike_allocation
+        return self.bike_allocation.astype(np.float32)
 
     def render(self, mode='human'):
-        print(f"Bike allocation: {self.bike_allocation}")
+        print(f"Bike allocation: {self.bike_allocation}, Total profit: {self.total_profit}")
 
 
 # Instantiate the environment
 env = BikeSharingEnv()
 
+# Create the model
+model = PPO("MlpPolicy", env, verbose=1, learning_rate=1e-7, use_sde=True)
 
+# Train the model
+model.learn(total_timesteps=1000)
+
+# Save the model
+# model.save("ppo_bike_sharing")
+
+# Test the trained model
+obs, _ = env.reset()  # Unpack observation and info
+for i in range(100):
+    action, _states = model.predict(obs, deterministic=True)
+    obs, reward, done, truncated, info = env.step(action)
+    env.render()
+    if done or truncated:
+        break
