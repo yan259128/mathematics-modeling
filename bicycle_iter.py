@@ -95,4 +95,3 @@ def total_revenue(
     bicycle_cost *= 1 - BICYCLE_RECOVERY_RATE
     total_cost = bicycle_cost + FIX_COST_ANNUAL * total_period_in_year
     return float(total_income - total_cost)
-
