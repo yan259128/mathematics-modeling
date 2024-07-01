@@ -1,19 +1,18 @@
 import numpy as np
 
-# 参数定义
+# 定义常量
+N = 10  # 区域数量
+B = 1000  # 总投入单车数量
 C = 4000  # 每台单车成本
-F = 500000  # 每年固定开支费用
+F = 500000  # 每年固定开支
 R = 3  # 每笔订单收益
-M = 0.15  # 日常维护费用比例
+M = 0.165  # 日常维护费用占比，取中间值
 L = 5  # 单车使用年限
-Rc = 0.1  # 报废车回收率
+P = 10.19 / (10.19 + 5.2)  # 晴天比例
+D = 5.2 / (10.19 + 5.2)  # 雨天比例
 
-# 晴天天数比率
-sunny_ratio = 10.19 / 15.39
-rainy_ratio = 5.2 / 15.39
-
-# 各区域需求数据（示例数据）
-D = np.array([
+# 需求矩阵（示例数据）
+demand_matrix = np.array([
     [0, 86, 120, 75, 122, 92, 129, 60, 105, 97],
     [86, 0, 58, 124, 103, 149, 117, 60, 74, 119],
     [109, 74, 0, 102, 88, 76, 140, 97, 70, 111],
@@ -26,46 +25,41 @@ D = np.array([
     [106, 138, 86, 116, 116, 112, 95, 146, 136, 0]
 ])
 
-# 预处理各区域单车需求总和
-demand_sums = np.sum(D, axis=1)
+# 初始化dp数组，dp[i][j]表示在前i个区域投放j台单车时的最大盈利
+dp = np.zeros((N + 1, B + 1))
 
-# 初始化DP表格
-max_bikes = 1000
-years = 5
-regions = 10
+# 初始化分配矩阵，allocation[i][j]表示在前i个区域投放j台单车时，第i个区域的分配数量
+allocation = np.zeros((N + 1, B + 1), dtype=int)
 
-dp = np.zeros((years + 1, max_bikes + 1))
-
-# 收益函数
-def profit(region, bikes):
-    orders = demand_sums[region] * bikes * sunny_ratio
-    revenue = orders * R
-    maintenance = revenue * M
-    return revenue - maintenance - F / regions
+# 计算晴天和雨天的单车使用时长
+sunny_hours = 12
+rainy_hours = 0
 
 # 动态规划求解
-for t in range(1, years + 1):
-    for x in range(max_bikes + 1):
-        for i in range(regions):
-            for k in range(x + 1):
-                dp[t][x] = max(dp[t][x], dp[t - 1][x - k] + profit(i, k))
+for i in range(1, N + 1):
+    hourly_demand = demand_matrix[i - 1]
+    total_demand_sunny = hourly_demand * sunny_hours * P
+    total_demand_rainy = hourly_demand * rainy_hours * D
+    total_demand = total_demand_sunny + total_demand_rainy
+    income_per_bike = np.sum(total_demand) * R * 365 * L  # 每台单车的总收入
+    maintenance_cost_per_bike = income_per_bike * M  # 每台单车的维护成本
 
-# 求解最优值
-max_profit = np.max(dp[years])
-print(f"最大盈利: {max_profit}")
+    for j in range(B + 1):
+        for k in range(j + 1):  # k表示在第i个区域投放的单车数量
+            cost = k * C + F * L + k * maintenance_cost_per_bike
+            profit = k * income_per_bike - cost
+            if dp[i][j] < dp[i - 1][j - k] + profit:
+                dp[i][j] = dp[i - 1][j - k] + profit
+                allocation[i][j] = k
 
-# 求解最优投放策略
-bikes_left = max_bikes
-optimal_distribution = [0] * regions
+# 回溯找到最佳投放方案
+best_allocation = np.zeros(N, dtype=int)
+remaining_bikes = B
+for i in range(N, 0, -1):
+    best_allocation[i - 1] = allocation[i][remaining_bikes]
+    remaining_bikes -= allocation[i][remaining_bikes]
 
-for t in range(years, 0, -1):
-    for i in range(regions):
-        for k in range(bikes_left + 1):
-            if dp[t][bikes_left] == dp[t - 1][bikes_left - k] + profit(i, k):
-                optimal_distribution[i] += k
-                bikes_left -= k
-                break
+max_profit = dp[N][B]
 
-print("最优投放策略:")
-for region, bikes in enumerate(optimal_distribution):
-    print(f"区域 {region + 1}: 投放 {bikes} 辆单车")
+print("最大盈利:", max_profit)
+print("最佳投放方案:", best_allocation)
