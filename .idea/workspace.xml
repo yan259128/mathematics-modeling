@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f0715671-62f5-47dc-bbbe-65ec3d2c1acc" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/problem_1.py" beforeDir="false" afterPath="$PROJECT_DIR$/problem_1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/problem_2.py" beforeDir="false" afterPath="$PROJECT_DIR$/problem_2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/problem_3.py" beforeDir="false" afterPath="$PROJECT_DIR$/problem_3.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/test.py" afterDir="false" />
-    </list>
+    <list default="true" id="f0715671-62f5-47dc-bbbe-65ec3d2c1acc" name="更改" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -54,7 +48,6 @@
     "Python.problem_3.executor": "Run",
     "Python.test.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "main",
     "last_opened_file_path": "D:/Pycharm/BicycleOptim",
     "node.js.detected.package.eslint": "true",
@@ -194,7 +187,7 @@
       <workItem from="1719736775553" duration="374000" />
       <workItem from="1719737159385" duration="10704000" />
       <workItem from="1719748075761" duration="20435000" />
-      <workItem from="1719818366671" duration="2567000" />
+      <workItem from="1719818366671" duration="3078000" />
     </task>
     <servers />
   </component>
@@ -203,7 +196,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/BicycleOptim$test.coverage" NAME="test 覆盖结果" MODIFIED="1719820123790" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/BicycleOptim$problem_1__1_.coverage" NAME="problem_1 (1) 覆盖结果" MODIFIED="1719819116530" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/BicycleOptim$problem_1__1_.coverage" NAME="problem_1 (1) 覆盖结果" MODIFIED="1719821154002" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BicycleOptim$env.coverage" NAME="env 覆盖结果" MODIFIED="1719747749558" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/ppo" />
     <SUITE FILE_PATH="coverage/BicycleOptim$problem_3.coverage" NAME="problem_3 覆盖结果" MODIFIED="1719819530264" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/BicycleOptim$a.coverage" NAME="a 覆盖结果" MODIFIED="1719646322244" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
