@@ -70,7 +70,7 @@ bicycles = np.array([95, 103,  91, 110,  94,  98, 118,  98, 107, 100]) # 10åˆ†é’
 out_gaps = np.zeros(10, dtype=int)
 cnt = 0
 
-while cnt < 100:
+while cnt < 1000:
     InitBicycleNums = bicycles.copy()
     for epoch in range(0, 18):
         bicycles, transfers, outs, ins = bicycle_epoch(bicycles, Demands10m)
