@@ -3,7 +3,8 @@ import math
 from mat2d_round import mat2d_round
 
 # 每小时的需求矩阵
-DEMANDS_HOURLY: np.ndarray = np.array([0,1,2,3,4,5,6,7,8,9,10,
+DEMANDS_HOURLY: np.ndarray = np.array(
+                [0,1,2,3,4,5,6,7,8,9,10,
                 1,0,86,120,75,122,92,129,60,105,97,
                 2,86,0,58,124,103,149,117,60,74,119,
                 3,109,74,0,102,88,76,140,97,70,111,
@@ -69,7 +70,7 @@ def total_revenue(
     demands_interval=TRANSFER_TIME, 
     iter_interval=DISPATCH_INTERVAL,
     total_period_in_year = BICYCLE_LIFE,
-    mute = False
+    mute: bool=False,
 )-> float:
     total_bicycle = int(bicycles.sum())
 
@@ -84,7 +85,7 @@ def total_revenue(
     iter_transfer = 0
     for i in range(epoches):
         bicycles, _, outs, _ = bicycle_epoch(bicycles, demands)
-        if not mute: print(f"epoch {i+1} out: {outs.sum().item()} {outs}")
+        if not mute: print(f"epoch {i+1}, out: {int(outs.sum())}, {outs}")
         iter_transfer += outs.sum()
     iter_income = iter_transfer * TRANSFER_REVENUE
     iter_income *= 1 - BICYCLE_MAINT_RATIO_DAILY
@@ -94,4 +95,3 @@ def total_revenue(
     bicycle_cost *= 1 - BICYCLE_RECOVERY_RATE
     total_cost = bicycle_cost + FIX_COST_ANNUAL * total_period_in_year
     return float(total_income - total_cost)
-
