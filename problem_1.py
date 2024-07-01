@@ -94,7 +94,7 @@ TotalDemand = DemandsHourly.sum(axis=1)
 InitialAllocation = (TotalDemand / TotalDemand.sum() * MaxBicycleNum).round().astype(int)
 
 # 计算盈利
-profit = bicycle_epoch(InitialAllocation, DemandsHourly)
+profit = total_revenue(InitialAllocation, DemandsHourly)
 
 print(f"初始分配方案：{InitialAllocation}")
 print(f"预期盈利：{profit}")
