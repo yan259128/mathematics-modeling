@@ -4,17 +4,17 @@ from mat2d_round import mat2d_round
 
 # 每小时的需求矩阵
 DEMANDS_HOURLY: np.ndarray = np.array(
-                [0,1,2,3,4,5,6,7,8,9,10,
-                1,0,86,120,75,122,92,129,60,105,97,
-                2,86,0,58,124,103,149,117,60,74,119,
-                3,109,74,0,102,88,76,140,97,70,111,
-                4,120,81,79,0,72,58,128,75,115,129,
-                5,70,140,109,138,0,88,114,51,140,71,
-                6,52,100,70,116,50,0,148,70,82,66,
-                7,88,80,91,100,64,69,0,59,114,51,
-                8,119,149,90,139,93,132,135,0,110,143,
-                9,106,95,107,97,150,128,91,141,0,117,
-                10,106,138,86,116,116,112,95,146,136,0]).reshape(11,11)[1:,1:]
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+     1, 0, 86, 120, 75, 122, 92, 129, 60, 105, 97,
+     2, 86, 0, 58, 124, 103, 149, 117, 60, 74, 119,
+     3, 109, 74, 0, 102, 88, 76, 140, 97, 70, 111,
+     4, 120, 81, 79, 0, 72, 58, 128, 75, 115, 129,
+     5, 70, 140, 109, 138, 0, 88, 114, 51, 140, 71,
+     6, 52, 100, 70, 116, 50, 0, 148, 70, 82, 66,
+     7, 88, 80, 91, 100, 64, 69, 0, 59, 114, 51,
+     8, 119, 149, 90, 139, 93, 132, 135, 0, 110, 143,
+     9, 106, 95, 107, 97, 150, 128, 91, 141, 0, 117,
+     10, 106, 138, 86, 116, 116, 112, 95, 146, 136, 0]).reshape(11, 11)[1:, 1:]
 DEMANDS_10M: np.ndarray = (np.array(DEMANDS_HOURLY) / 6).round(0).astype(int)
 
 BICYCLE_FIX_COST = 4000  # 每辆自行车成本/元
@@ -32,8 +32,8 @@ TRANSFER_TIME = 1 / 6  # 自行车单次使用小时数
 
 
 def bicycle_epoch(
-    bicycles: np.ndarray,
-    demands: np.ndarray = DEMANDS_HOURLY,
+        bicycles: np.ndarray,
+        demands: np.ndarray = DEMANDS_HOURLY,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     # 迭代一次自行车的输出与输入, bicycles为初始的自行车数量矩阵, demands 为各区域的需求矩阵
     # 所有参数都必须为整数
@@ -65,27 +65,27 @@ def bicycle_epoch(
 
 
 def total_revenue(
-    bicycles: np.ndarray,
-    demands: np.ndarray = DEMANDS_HOURLY,
-    demands_interval=TRANSFER_TIME, 
-    iter_interval=DISPATCH_INTERVAL,
-    total_period_in_year = BICYCLE_LIFE,
-    mute: bool=False,
-)-> float:
+        bicycles: np.ndarray,
+        demands: np.ndarray = DEMANDS_HOURLY,
+        demands_interval=TRANSFER_TIME,
+        iter_interval=DISPATCH_INTERVAL,
+        total_period_in_year=BICYCLE_LIFE,
+        mute: bool = False,
+) -> float:
     total_bicycle = int(bicycles.sum())
 
     life_cycle_iters = round(total_period_in_year * 365 * FINE_DAY_RATIO) * (
-        OP_HOURS_FINE_DAY // iter_interval
+            OP_HOURS_FINE_DAY // iter_interval
     )
     life_cycle_iters += round(total_period_in_year * 365 * RAINY_DAY_RATIO) * (
-        OP_HOURS_RAINY_DAY // iter_interval
+            OP_HOURS_RAINY_DAY // iter_interval
     )
 
     epoches = math.floor(iter_interval // demands_interval)
     iter_transfer = 0
     for i in range(epoches):
         bicycles, _, outs, _ = bicycle_epoch(bicycles, demands)
-        if not mute: print(f"epoch {i+1}, out: {int(outs.sum())}, {outs}")
+        if not mute: print(f"epoch {i + 1}, out: {int(outs.sum())}, {outs}")
         iter_transfer += outs.sum()
     iter_income = iter_transfer * TRANSFER_REVENUE
     iter_income *= 1 - BICYCLE_MAINT_RATIO_DAILY
